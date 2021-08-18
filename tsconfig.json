@@ -1,0 +1,4 @@
+{
+    "extends": "grumbler-scripts/config/tsconfig.json",
+    "exclude": ["test/**/*"] /* temp for conversion */
+}

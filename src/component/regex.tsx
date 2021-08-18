@@ -1,16 +1,18 @@
-/* @flow */
 /** @jsx node */
-
-import { type ChildType, type ChildrenType, TextNode } from '../node';
+import type { ChildType, ChildrenType } from '../node';
+import { TextNode } from '../node';
 import { isDefined } from '../util';
 import { NODE_TYPE } from '../constants';
 import { regex } from '../renderers';
 
-const escapeRegex = (text : string) : string => {
+const escapeRegex = (text: string): string => {
     return text.replace(/[-[\]{}()*+?.,\\^$|#]/g, '\\$&');
 };
 
-const validateChildren = (name : string, children : ?ChildrenType) : ChildrenType => {
+const validateChildren = (
+    name: string,
+    children: ChildrenType | null | undefined
+): ChildrenType => {
     if (!children) {
         throw new Error(`Must pass children to ${ name }`);
     }
@@ -18,16 +20,21 @@ const validateChildren = (name : string, children : ?ChildrenType) : ChildrenTyp
     return children;
 };
 
-const validateNoChildren = (name : string, children : ?ChildrenType) => {
+const validateNoChildren = (
+    name: string,
+    children: ChildrenType | null | undefined
+) => {
     if (children && children.length) {
         throw new Error(`Must not pass children to ${ name }`);
     }
 };
 
-const validateAndEscapeChildren = (name : string, children : ?ChildrenType) : ChildrenType => {
+const validateAndEscapeChildren = (
+    name: string,
+    children: ChildrenType | null | undefined
+): ChildrenType => {
     children = validateChildren(name, children);
-
-    return children.map(child => {
+    return children.map((child) => {
         if (child.type === NODE_TYPE.TEXT) {
             return new TextNode(escapeRegex(child.text));
         }
@@ -36,69 +43,65 @@ const validateAndEscapeChildren = (name : string, children : ?ChildrenType) : Ch
     });
 };
 
-export type RegexOptions = {|
-    exact? : boolean
-|};
-
-export function Regex({ exact = true } : RegexOptions, children? : ChildrenType) : ChildType {
+export type RegexOptions = {
+    exact?: boolean;
+};
+export function Regex(
+    { exact = true }: RegexOptions,
+    children?: ChildrenType
+): ChildType {
     children = validateAndEscapeChildren('RegexGroup', children);
 
     if (!exact) {
         return children;
     }
 
-    return [
-        '^',
-        ...children,
-        '$'
-    ];
+    return [ '^', ...children, '$' ];
 }
-
 Regex.renderer = regex;
-
-type RegexTextOptions = {|
-    
-|};
-
-export function RegexText(props : RegexTextOptions, children? : ChildrenType) : ChildType {
+type RegexTextOptions = Record<string, any>;
+export function RegexText(
+    props: RegexTextOptions,
+    children?: ChildrenType
+): ChildType {
     return validateAndEscapeChildren('RegexText', children);
 }
-
-type RegexWordOptions = {|
-    
-|};
-
-export function RegexWord(props : RegexWordOptions, children? : ChildrenType) : ChildType {
+type RegexWordOptions = Record<string, any>;
+export function RegexWord(
+    props: RegexWordOptions,
+    children?: ChildrenType
+): ChildType {
     validateNoChildren('RegexWord', children);
-
     return '\\w+';
 }
-
-
-type RegexCharactersOptions = {|
-    
-|};
-
-export function RegexCharacters(props : RegexCharactersOptions, children? : ChildrenType) : ChildType {
-    return [
-        '[',
-        ...validateAndEscapeChildren('RegexText', children),
-        ']'
-    ];
+type RegexCharactersOptions = Record<string, any>;
+export function RegexCharacters(
+    props: RegexCharactersOptions,
+    children?: ChildrenType
+): ChildType {
+    return [ '[', ...validateAndEscapeChildren('RegexText', children), ']' ];
 }
-
-
-type RegexGroupOptions = {|
-    optional? : boolean,
-    repeat? : boolean | number,
-    repeatMin? : number,
-    repeatMax? : number,
-    capture? : boolean,
-    union? : boolean,
-    name? : string
-|};
-
-export function RegexGroup({ repeat, repeatMin, repeatMax, name, optional = false, capture = true, union = false } : RegexGroupOptions, children? : ChildrenType) : ChildType {
+type RegexGroupOptions = {
+    optional?: boolean;
+    repeat?: boolean | number;
+    repeatMin?: number;
+    repeatMax?: number;
+    capture?: boolean;
+    union?: boolean;
+    name?: string;
+};
+export function RegexGroup(
+    {
+        repeat,
+        repeatMin,
+        repeatMax,
+        name,
+        optional = false,
+        capture = true,
+        union = false
+    }: RegexGroupOptions,
+    children?: ChildrenType
+): ChildType {
     children = validateAndEscapeChildren('RegexGroup', children);
 
     if (isDefined(repeat) && (isDefined(repeatMin) || isDefined(repeatMax))) {
@@ -116,13 +119,12 @@ export function RegexGroup({ repeat, repeatMin, repeatMax, name, optional = fals
             result.push(child);
             result.push(new TextNode('|'));
         }
-    
+
         result.pop();
         children = result;
     }
 
     const result = [];
-
     result.push(capture ? '(' : '(?:');
 
     if (name) {
@@ -150,14 +152,12 @@ export function RegexGroup({ repeat, repeatMin, repeatMax, name, optional = fals
 
     return result;
 }
-
-type RegexUnionOptions = {|
-
-|};
-
-export function RegexUnion(props : RegexUnionOptions, children? : ChildrenType) : ChildType {
+type RegexUnionOptions = Record<string, any>;
+export function RegexUnion(
+    props: RegexUnionOptions,
+    children?: ChildrenType
+): ChildType {
     children = validateAndEscapeChildren('RegexGroup', children);
-
     const result = [];
 
     for (const child of children) {
@@ -166,6 +166,5 @@ export function RegexUnion(props : RegexUnionOptions, children? : ChildrenType) 
     }
 
     result.pop();
-
     return result;
 }

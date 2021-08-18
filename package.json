@@ -6,13 +6,14 @@
   "scripts": {
     "dev": "babel-node --plugins @babel/plugin-transform-modules-commonjs $(npm bin)/webpack-dev-server --config webpack.config.js --port 9000 --open-page demo/dev/index.htm --hot=false --inline=false",
     "setup": "npm install && npm run flow-typed",
-    "lint": "eslint src/ test/ *.js --ext .js,.jsx",
+    "lint": "eslint --ext ts,tsx,js,jsx src/ test/",
     "flow-typed": "rm -rf ./flow-typed && flow-typed install && flow-typed install react@6 && flow-typed install mocha@4",
     "flow": "flow",
     "karma": "cross-env NODE_ENV=test babel-node --plugins=transform-es2015-modules-commonjs ./node_modules/.bin/karma start",
     "babel": "babel src/ --out-dir dist/module",
     "webpack": "babel-node --plugins=transform-es2015-modules-commonjs ./node_modules/.bin/webpack --progress",
     "test": "npm run lint && npm run flow-typed && npm run flow && npm run karma",
+    "tsc": "tsc",
     "build": "npm run test && npm run babel && npm run webpack",
     "release": "./publish.sh",
     "release:patch": "./publish.sh patch",
@@ -48,8 +49,14 @@
   ],
   "readmeFilename": "README.md",
   "devDependencies": {
+    "@types/jest": "^27.0.1",
+    "@typescript-eslint/eslint-plugin": "^4.29.2",
+    "@typescript-eslint/parser": "^4.29.2",
+    "eslint-import-resolver-typescript": "^2.4.0",
     "flow-bin": "^0.135.0",
     "grumbler-scripts": "^3",
-    "mocha": "^4.1.0"
+    "mocha": "^4.1.0",
+    "ts-node": "^10.2.1",
+    "typescript": "^4.3.5"
   }
 }
